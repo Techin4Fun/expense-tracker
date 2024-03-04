@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import './index.css';
 
 let inputText = 'Enter your income';
-
+let incomeOrExpense = "income";
 
 export default function App() {
   // Initializes Local Storage if it doesn't exist.
@@ -11,12 +11,10 @@ export default function App() {
     if(!(localStorage.getItem("List"))){
       localStorage.setItem("List", JSON.stringify(data));
     }
-  }
-  createStorage();
+ }
 
   // Gets all the local storage data from the browser
-  const storageItems = JSON.parse(localStorage.getItem("List"));
-
+  const storageItems = localStorage.getItem("List") ? JSON.parse(localStorage.getItem("List")) : createStorage();
   // localitems is set to the current Local Storage data on every render.
   const [localitems, setLocalItems] = useState(storageItems);
 
@@ -40,15 +38,22 @@ export default function App() {
   function getSign(amount) {
     if (amount > 0) {
       return '+';
-    } else {
-      return '-';
+    } else if(amount === 0) {
+      return "";
+    }
+    else{
+      return "-";
     }
   }
 
   function getTransactionColor(amount) {
     if (amount > 0) {
       return "text-green-500";
-    } else {
+    } 
+    else if(amount === 0){
+      return "text-stone-500";
+    }
+    else {
       return "text-red-500";
     }
   }
@@ -64,7 +69,7 @@ export default function App() {
 
   function addToList(e) {
     e.preventDefault();
-    if (e.target.innerHTML === 'Add Income') {
+    if (incomeOrExpense === 'income') {
       // The reason for "+transactionAmount" is to convert transactionAmount from a string to number using the unary operator.
       // Without the + in front of transactionAmount, everything else is converted to a string and it's all wonky.
       setTransactionsList([{description: description, amount: +transactionAmount}, ...transactionsList]);
@@ -73,7 +78,7 @@ export default function App() {
       setTransactionAmount('');
       setDescription('');
     } 
-    else {
+    else if(incomeOrExpense === "expense"){
       setTransactionsList([{description: description, amount: +transactionAmount - transactionAmount * 2}, ...transactionsList]);
       setLocalItems([{description: description, amount: +transactionAmount - transactionAmount * 2}, ...transactionsList]);
 
@@ -82,9 +87,18 @@ export default function App() {
     }
   }
 
-  function handleInput(e) {
-    setTransactionAmount(e.target.value);
-    console.log(`Amount: ${e.target.value}`);
+  function handleAmountInput(e) {
+    const onlyNumbers = /^(\d)*(\.)?([0-9]{1})?$/;
+    // Checks to see if the input value is an integer or decimal
+    if(onlyNumbers.test(e.target.value)){
+      setTransactionAmount(e.target.value);
+      console.log(`Amount: ${e.target.value}`);
+    }
+    else{
+      // The end of the input will be removed if it's not a number or decimal
+      let input = e.target.value.slice(0, e.target.value.length - 1);
+      setTransactionAmount(input);
+    }
   }
 
   function handleDescriptionInput(e) {
@@ -188,6 +202,7 @@ export default function App() {
     });
   }
 
+  // console.log(onlyNumbers.test()); //Testing the Regex
 
   return (
 
@@ -223,6 +238,7 @@ export default function App() {
                   className="bg-green-300 border-2 border-black rounded-full -bottom-[0%] left-[40%] cursor-pointer shadow-lg"  
                   onClick={function () {
                     inputText = 'Enter your income';
+                    incomeOrExpense = "income";
                     setButtonName('Add Income');
                   }}                 
                 />
@@ -236,6 +252,7 @@ export default function App() {
                   className="bg-red-300 rounded-full -bottom-[0%] left-[40%] cursor-pointer border-2 border-black shadow-lg"
                   onClick={function () {
                     inputText = 'Enter your expense';
+                    incomeOrExpense = "expense";
                     setButtonName('Add Expense');
                   }}
                 />
@@ -244,7 +261,9 @@ export default function App() {
         
         {/* Description and Amount Form */}
         <div className="pb-5 w-1/2 mx-auto">
-            <form className="flex flex-col">
+            <form className="flex flex-col" onSubmit={function(e){
+              addToList(e);
+            }}>
                 <label className="font-bold">Description</label>
                 <input type="text" className="px-2 mb-5 border-black border-2 rounded-md shadow-lg" 
                   placeholder="Enter description"
@@ -260,15 +279,16 @@ export default function App() {
                   value={transactionAmount}
                   placeholder={inputText}
                   onChange={function (e) {
-                    handleInput(e);
+                    handleAmountInput(e);
                   }}
                   required
                 />
 
                 {/* Add Income OR Expense Button */}
                 <button className={getButtonColor(buttonName) + " font-bold p-2 rounded-md border-2 border-black shadow-[4px_4px_black]"}
+                  name={incomeOrExpense}
                   onClick={function (e) {
-                    addToList(e);
+                    // addToList(e);
                     console.log(e.target.innerHTML);
                   }}
                 >
@@ -306,6 +326,7 @@ export default function App() {
         </div>
 
       </div>
+
     </main>
 
   );
