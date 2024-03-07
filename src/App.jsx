@@ -154,19 +154,35 @@ export default function App() {
   const [incomeTotal, setIncomeTotal] = useState(incomeSum);
   const [expenseTotal, setExpenseTotal] = useState(expenseSum);
 
+  const [incomeTotalString, setIncomeTotalString] = useState("");
+  const [expenseTotalString, setExpenseTotalString] = useState("");
+  const [balanceTotalString, setBalanceTotalString] = useState("");
+
+  function numToStringTotals(func, num){
+    func(Math.abs((num)).toLocaleString("en-US"));
+  }
+
 // Re-renders the Balance, Income and Expense Total whenever either of them has been updated
   useEffect(function(){
     setBalanceTotal(balanceSum);
     setIncomeTotal(incomeSum);
     setExpenseTotal(expenseSum);
+
+    numToStringTotals(setIncomeTotalString, incomeTotal);
+    numToStringTotals(setExpenseTotalString, expenseTotal);
+    numToStringTotals(setBalanceTotalString, balanceTotal);
     
-  },[balanceSum, incomeSum, expenseSum, transactionsList]);
+  },[balanceSum, incomeSum, expenseSum, incomeTotal, expenseTotal, balanceTotal, transactionsList]);
 
 
   function removeItem(value){
     const filtered = localitems.filter(localitem => localitem !== value);
     localStorage.setItem("List", JSON.stringify(filtered));
     setLocalItems(filtered);
+    setTransactionsList(filtered);
+    // console.log(filtered);
+    // console.log(transactionsList);
+
 
     getAllTotals();
 
@@ -202,7 +218,11 @@ export default function App() {
     });
   }
 
-  // console.log(onlyNumbers.test()); //Testing the Regex
+  function numToString(num){
+    let toString = (Math.abs(num.amount)).toLocaleString("en-US");
+    return toString;
+  }
+
 
   return (
 
@@ -217,15 +237,18 @@ export default function App() {
         <div className="flex justify-between shadow-lg">
             <div className=" bg-green-300 w-1/3 text-center border-r-4 border-b-2 border-black py-4">
                 <h2 className="font-bold">Income</h2>
-                <h2>${incomeTotal.toFixed(2)}</h2>
+                {/* <h2>${(incomeTotal.toFixed(2))}</h2> */}
+                <h2>{getSign(incomeTotal)}${incomeTotalString}</h2>
             </div>
             <div className="bg-blue-300 w-1/3 text-center border-b-2 border-black py-4">
                 <h2 className="font-bold">Balance</h2>
-                <h2>${(balanceTotal.toFixed(2))}</h2>
+                {/* <h2>${(balanceTotal.toFixed(2))}</h2> */}
+                <h2>{getSign(balanceTotal)}${balanceTotalString}</h2>
             </div>
             <div className="bg-red-300 w-1/3 text-center border-l-4 border-b-2 border-black py-4">
                 <h2 className="font-bold">Expense</h2>
-                <h2>{getSign(expenseTotal)}${Math.abs(expenseTotal).toFixed(2)}</h2>
+                {/* <h2>{getSign(expenseTotal)}${Math.abs(expenseTotal).toFixed(2)}</h2> */}
+                <h2>{getSign(expenseTotal)}${expenseTotalString}</h2>
             </div> 
         </div>
 
@@ -259,14 +282,15 @@ export default function App() {
             </div>
         </div>
         
-        {/* Description and Amount Form */}
+        {/* Title and Amount Form */}
         <div className="pb-5 w-1/2 mx-auto">
-            <form className="flex flex-col" onSubmit={function(e){
+            <form className="flex flex-col mb-5" onSubmit={function(e){
               addToList(e);
             }}>
-                <label className="font-bold">Description</label>
-                <input type="text" className="px-2 mb-5 border-black border-2 rounded-md shadow-lg" 
-                  placeholder="Enter description"
+                {/* Title Input Field */}
+                <label className="font-bold">Title *</label>
+                <input type="text" className="px-2 mb-5 border-black border-2 rounded-md shadow-lg focus:border-blue-500" 
+                  placeholder="Enter title"
                   value={description}
                   onChange={function (e) {
                     handleDescriptionInput(e);
@@ -274,8 +298,9 @@ export default function App() {
                   required
                 />
 
-                <label className="font-bold">Amount</label>
-                <input type="text" name="" id="" className="px-2 mb-5 border-black border-2 rounded-md shadow-lg" 
+                {/* Amount Input Field */}
+                <label className="font-bold">Amount *</label>
+                <input type="text" name="" id="" className="px-2 mb-5 border-black border-2 rounded-md shadow-lg focus:border-blue-500" 
                   value={transactionAmount}
                   placeholder={inputText}
                   onChange={function (e) {
@@ -287,10 +312,6 @@ export default function App() {
                 {/* Add Income OR Expense Button */}
                 <button className={getButtonColor(buttonName) + " font-bold p-2 rounded-md border-2 border-black shadow-[4px_4px_black]"}
                   name={incomeOrExpense}
-                  onClick={function (e) {
-                    // addToList(e);
-                    console.log(e.target.innerHTML);
-                  }}
                 >
                   {buttonName}
                 </button>
@@ -308,9 +329,12 @@ export default function App() {
               <div className="bg-white flex justify-between py-5 px-10 my-3 mx-3 md:mx-14 rounded-lg shadow-md" key={index}>
                   <h2>{item.description}</h2>  
                   <div className='flex flex-row gap-5 items-center justify-center'>
-                    <h2 className={getTransactionColor(item.amount)}>{getSign(item.amount)}
-                    {"\t"}
-                    ${Math.abs(item.amount).toFixed(2)}</h2>
+                    <h2 className={getTransactionColor(item.amount)}>
+                      {getSign(item.amount)}
+                      {"\t"}
+                      {/* ${Math.abs(item.amount).toFixed(2)} */}
+                      ${numToString(item)}
+                    </h2>
                     <button onClick={function(){
                       removeItem(item);
                     }}>
