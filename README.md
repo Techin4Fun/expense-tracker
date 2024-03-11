@@ -24,13 +24,13 @@ The purpose of this project was to learn about using Local Storage to store the 
 Clone the project
 
 ```bash
-  git clone https://github.com/Techin4Fun/pokedex-project.git
+  git clone https://github.com/Techin4Fun/expense-tracker.git
 ```
 
 Go to the project directory
 
 ```bash
-  cd pokedex-project
+  cd expense-tracker
 ```
 
 Install dependencies
